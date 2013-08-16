@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
+
+  <persistence-unit name="myUnit" transaction-type="JTA">
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <class>com.peergreen.demo.smartthing.jpa.ChannelEntity</class>
+    <class>com.peergreen.demo.smartthing.jpa.DeviceEntity</class>
+    <class>com.peergreen.demo.smartthing.jpa.SensorEntity</class>
+    <properties>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect" />
+      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+      <property name="javax.persistence.jdbc.driver" value="com.peergreen.db.h2.H2Driver"/>
+      <property name="javax.persistence.jdbc.url" value="jdbc:pg+h2:tcp://localhost:1234/mydatabase"/>
+      <property name="javax.persistence.jdbc.user" value="APP"/>
+      <property name="javax.persistence.jdbc.password" value="APP"/>
+      
+      <property name="hibernate.connection.driver_class" value="com.peergreen.db.h2.H2Driver"/>
+      <property name="hibernate.connection.url" value="jdbc:pg+h2:tcp://localhost:1234/mydatabase"/>
+      <property name="hibernate.connection.username" value="APP"/> 
+      <property name="hibernate.connection.password" value="APP"/> 
+      
+    </properties>
+  </persistence-unit>
+</persistence>
