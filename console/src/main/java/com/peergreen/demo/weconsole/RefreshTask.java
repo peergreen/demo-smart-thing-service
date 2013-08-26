@@ -65,7 +65,7 @@ public class RefreshTask implements Runnable {
 
 
     protected URI buildURI(String path) {
-        return UriBuilder.fromUri("http://localhost:9000/smart-thing-service-impl-1.0.0-SNAPSHOT/devices/").path(path).build();
+        return UriBuilder.fromUri("http://109.26.71.78/smart-thing-service/devices/").path(path).build();
     }
 
    protected String cleanupUri(String input) {
