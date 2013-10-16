@@ -39,14 +39,13 @@ import com.peergreen.demo.weconsole.node.SensorNode;
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.server.ClassResource;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Tree;
 
 /**
  * Task used to refresh the tree.
  * @author Florent Benoit
  */
-public class RefreshTask implements Runnable {
+public class RefreshTask  {
 
     private final Container container;
 
@@ -54,18 +53,17 @@ public class RefreshTask implements Runnable {
 
     private final Client client;
 
-    private final Label labelValue;
 
-    public RefreshTask(Container container, Tree tree, Label labelValue) {
+    public RefreshTask(Container container, Tree tree) {
         this.container = container;
         this.tree = tree;
-        this.labelValue = labelValue;
         this.client = ClientBuilder.newClient();
     }
 
 
     protected URI buildURI(String path) {
-        return UriBuilder.fromUri("http://109.26.71.78/smart-thing-service/devices/").path(path).build();
+        return UriBuilder.fromUri("http://10.200.26.238/devices/").path(path).build();
+        //return UriBuilder.fromUri("http://localhost:9000/smart-thing-service/devices/").path(path).build();
     }
 
    protected String cleanupUri(String input) {
@@ -78,44 +76,34 @@ public class RefreshTask implements Runnable {
        return uri.getHost().replace("[", "").replace("]", "");
    }
 
-    @Override
-    public void run() {
-        updateTree();
-    }
-
-
-    protected void updateTree() {
+    protected void updateAllTree() {
         // get all devices
         List<DeviceInfo> devices = getAllDevices();
+        System.out.println("found devices length = " + devices.size());
 
         // First, create devices
         for (DeviceInfo device : devices) {
-            DeviceNode deviceNode = new DeviceNode(device);
+            System.out.println("found device" + device.getModel());
+            final DeviceNode deviceNode = new DeviceNode(device);
             // Not/Found
             if (container.getItem(deviceNode) == null) {
-                Item item = container.addItem(deviceNode);
-                item.getItemProperty(ENTRY_NAME).setValue(deviceNode.getName());
-                item.getItemProperty(ICON).setValue(new ClassResource(RefreshTask.class, "/device.png"));
-                tree.setChildrenAllowed(deviceNode, true);
+                tree.getUI().access(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Item item = container.addItem(deviceNode);
+                        item.getItemProperty(ENTRY_NAME).setValue(deviceNode.getName());
+                        item.getItemProperty(ICON).setValue(new ClassResource(RefreshTask.class, "/device.png"));
+                        tree.setChildrenAllowed(deviceNode, true);
+                    }
+                });
+
             }
 
             // Update device by adding sensors
             updateDevice(deviceNode);
 
         }
-
-        // print current value of the selected item
-        Object object = tree.getValue();
-        if (object != null && object instanceof ChannelNode) {
-            ChannelNode channelNode = (ChannelNode) object;
-            String val = getValue(channelNode);
-            if (val == null) {
-                this.labelValue.setValue("");
-            } else {
-                this.labelValue.setValue(val);
-            }
-        }
-
 
     }
 
@@ -127,15 +115,21 @@ public class RefreshTask implements Runnable {
 
         // First, create sensor if not yet available
         for (SensorInfo sensor : sensors) {
-            SensorNode sensorNode = new SensorNode(deviceNode, sensor);
+            final SensorNode sensorNode = new SensorNode(deviceNode, sensor);
             // Not/Found
             if (container.getItem(sensorNode) == null) {
-                Item item = container.addItem(sensorNode);
-                item.getItemProperty(ENTRY_NAME).setValue(sensorNode.getName());
-                item.getItemProperty(ICON).setValue(new ClassResource(RefreshTask.class, "/sensor.png"));
+               tree.getUI().access(new Runnable() {
 
-                tree.setChildrenAllowed(sensorNode, true);
-                tree.setParent(sensorNode, sensorNode.getParent());
+                    @Override
+                    public void run() {
+                        Item item = container.addItem(sensorNode);
+                        item.getItemProperty(ENTRY_NAME).setValue(sensorNode.getName());
+                        item.getItemProperty(ICON).setValue(new ClassResource(RefreshTask.class, "/sensor.png"));
+
+                        tree.setChildrenAllowed(sensorNode, true);
+                        tree.setParent(sensorNode, sensorNode.getParent());
+                    }
+                });
             }
 
             // Update device by adding sensors
@@ -152,31 +146,22 @@ public class RefreshTask implements Runnable {
 
         // First, create sensor if not yet available
         for (ChannelInfo channel : channels) {
-            ChannelNode channelNode = new ChannelNode(sensorNode, channel);
+            final ChannelNode channelNode = new ChannelNode(sensorNode, channel);
             // Not/Found
             if (container.getItem(channelNode) == null) {
-                Item item = container.addItem(channelNode);
-                item.getItemProperty(ENTRY_NAME).setValue(channelNode.getName());
-                item.getItemProperty(ICON).setValue(new ClassResource(RefreshTask.class, "/channel.png"));
-                tree.setChildrenAllowed(channelNode, false);
-                tree.setParent(channelNode, channelNode.getParent());
+                tree.getUI().access(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Item item = container.addItem(channelNode);
+                        item.getItemProperty(ENTRY_NAME).setValue(channelNode.getName());
+                        item.getItemProperty(ICON).setValue(new ClassResource(RefreshTask.class, "/channel.png"));
+                        tree.setChildrenAllowed(channelNode, false);
+                        tree.setParent(channelNode, channelNode.getParent());
+                    }});
             }
         }
     }
-
-    protected String getValue(ChannelNode channelNode) {
-        SensorNode sensorNode = channelNode.getSensorNode();
-        DeviceNode deviceNode = sensorNode.getDeviceNode();
-
-
-        URI getChannelValueURI = buildURI(cleanupUri(deviceNode.getDeviceInfo().getUri()).concat("/sensors/").concat(sensorNode.getSensorInfo().getName()).concat("/channels/").concat(String.valueOf(channelNode.getChannelInfo().getId())).concat("/lastValue"));
-        Response response = client.target(getChannelValueURI).request().get();
-        // Should be equals to the data sent before
-        String value = response.readEntity(String.class);
-        return value;
-
-    }
-
 
     protected List<DeviceInfo> getAllDevices() {
         URI listDevicesURI = buildURI("");

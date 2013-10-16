@@ -93,6 +93,7 @@ public class MyVaadinUI extends UI  {
 
 
         new InitializerThread().start();
+        new ChannelValueThread().start();
 
         tree.addValueChangeListener(new ValueChangeListener() {
             @Override
@@ -176,19 +177,38 @@ public class MyVaadinUI extends UI  {
         @Override
         public void run() {
 
-            RefreshTask timerTask = new RefreshTask(container, tree, labelValue);
+            RefreshTask timerTask = new RefreshTask(container, tree);
 
             while (true) {
-                // Init done, update the UI after doing locking
-                access(timerTask);
+                timerTask.updateAllTree();
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                 }
 
             }
         }
     }
+
+
+
+    class ChannelValueThread extends Thread {
+        @Override
+        public void run() {
+
+            RefreshSubTask timerTask = new RefreshSubTask(container, tree, labelValue);
+
+            while (true) {
+                timerTask.updateOnlyCell();
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException e) {
+                }
+
+            }
+        }
+    }
+
 
 
 }

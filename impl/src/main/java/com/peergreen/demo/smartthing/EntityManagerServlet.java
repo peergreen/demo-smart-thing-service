@@ -32,7 +32,8 @@ public class EntityManagerServlet extends HttpServlet {
 
     @PostConstruct
     public void postConstruct() {
-        DevicesApplication.entityManager = entityManager;
+        System.out.println("Initializing servlet with entity manager = " + entityManager);
+        DevicesApplication.setEntityManager(entityManager);
     }
 
 

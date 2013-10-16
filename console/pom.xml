@@ -24,7 +24,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <vaadin.version>7.1.2</vaadin.version>
+    <vaadin.version>7.1.7</vaadin.version>
     <vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
   </properties>
   <repositories>
@@ -94,6 +94,7 @@
       <groupId>com.peergreen.demo</groupId>
       <artifactId>smart-thing-service-api</artifactId>
       <version>${project.version}</version>
+
     </dependency>
     <dependency>
       <groupId>javax.ws.rs</groupId>
@@ -111,11 +112,33 @@
 
   <build>
     <plugins>
+      <!-- License header check -->
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>${apache-rat-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>legal</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <exclude>src/main/webapp/**</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-maven-plugin</artifactId>
         <version>${vaadin.plugin.version}</version>
         <configuration>
+          <persistentunitcachedir>${project.build.directory}/excluded</persistentunitcachedir>
+          <deploy>${project.build.directory}/gwt-deploy</deploy>
           <extraJvmArgs>-Xmx512M -Xss1024k</extraJvmArgs>
           <!-- <runTarget>mobilemail</runTarget> -->
           <!-- We are doing "inplace" but into subdir VAADIN/widgetsets.

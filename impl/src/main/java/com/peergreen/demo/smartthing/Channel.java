@@ -12,6 +12,9 @@ package com.peergreen.demo.smartthing;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import javax.json.JsonObject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -89,6 +92,36 @@ public class Channel extends AbsRestObject {
     }
 
     @GET
+    @Path("lastUpdated")
+    public Response getLastUpdated() {
+        ChannelEntity foundChannel = getPersistenceService().findChannel(deviceName, sensorName, id);
+        if (foundChannel == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        if (foundChannel.getValues().size() > 0) {
+            return Response.status(200).entity(foundChannel.getLastUpdated().get(foundChannel.getLastUpdated().size() - 1)).build();
+        }
+        return Response.status(Status.NOT_FOUND).build();
+    }
+
+    @GET
+    @Path("lastServerID")
+    public Response getLastServerId() {
+        ChannelEntity foundChannel = getPersistenceService().findChannel(deviceName, sensorName, id);
+        if (foundChannel == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        if (foundChannel.getValues().size() > 0) {
+            return Response.status(200).entity(foundChannel.getServersId().get(foundChannel.getServersId().size() - 1)).build();
+        }
+        return Response.status(Status.NOT_FOUND).build();
+    }
+
+
+
+    @GET
     @Path("add/{value}")
     public Response addValue(@PathParam("value") double value) {
         ChannelEntity foundChannel = getPersistenceService().findChannel(deviceName, sensorName, id);
@@ -97,6 +130,12 @@ public class Channel extends AbsRestObject {
         }
 
         foundChannel.getValues().add(value);
+        try {
+            foundChannel.getServersId().add(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException e) {
+            foundChannel.getServersId().add("Unknown source");
+        }
+        foundChannel.getLastUpdated().add(System.currentTimeMillis());
         getPersistenceService().updateChannel(foundChannel);
 
 

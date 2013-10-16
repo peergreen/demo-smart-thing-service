@@ -10,7 +10,9 @@
 package com.peergreen.demo.smartthing;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -24,14 +26,25 @@ import com.peergreen.demo.smartthing.service.PersistenceService;
 @ApplicationPath("/devices")
 public class DevicesApplication extends Application {
 
-    public static EntityManager entityManager;
+    private static EntityManager entityManager;
+
+    public static List<Devices> allDevices = new CopyOnWriteArrayList<>();
 
     @PostConstruct
     protected void postConstruct() {
-        System.out.println("postConstruct");
+        System.out.println("postConstruct with entity manager = " + entityManager);
     }
 
     private PersistenceService persistenceService;
+
+    public static void setEntityManager(EntityManager entityManager) {
+        PersistenceService persistenceService = new JPAPersistenceService(entityManager);
+        for (Devices devices : allDevices) {
+            System.out.println("Changing persistence service to " + persistenceService);
+            devices.setPersistenceService(persistenceService);
+        }
+    }
+
 
     public PersistenceService getPersistenceService() {
         return persistenceService;
@@ -50,7 +63,10 @@ public class DevicesApplication extends Application {
         if (persistenceService == null) {
             this.persistenceService = new InMemoryPersistenceService();
         }
-        set.add(new Devices(persistenceService));
+        System.out.println("Using persistence service ="  + persistenceService);
+        Devices devices = new Devices(persistenceService);
+        set.add(devices);
+        allDevices.add(devices);
         return set;
     }
 

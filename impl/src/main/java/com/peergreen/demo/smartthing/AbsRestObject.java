@@ -13,7 +13,7 @@ import com.peergreen.demo.smartthing.service.PersistenceService;
 
 public abstract class AbsRestObject {
 
-    private final PersistenceService persistenceService;
+    private PersistenceService persistenceService;
 
     public AbsRestObject(PersistenceService persistenceService) {
         this.persistenceService = persistenceService;
@@ -21,6 +21,10 @@ public abstract class AbsRestObject {
 
     public PersistenceService getPersistenceService() {
         return persistenceService;
+    }
+
+    public void setPersistenceService(PersistenceService persistenceService) {
+        this.persistenceService = persistenceService;
     }
 
 }

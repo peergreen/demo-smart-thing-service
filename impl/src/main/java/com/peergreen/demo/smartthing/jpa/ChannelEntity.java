@@ -41,11 +41,19 @@ public class ChannelEntity {
     @ElementCollection
     private final List<Double> values;
 
+    @ElementCollection
+    private final List<String> serversID;
+
+    @ElementCollection
+    private final List<Long> lastUpdated;
+
     @ManyToOne
     private SensorEntity sensorEntity;
 
     public ChannelEntity() {
         this.values = new ArrayList<>();
+        this.serversID = new ArrayList<>();
+        this.lastUpdated = new ArrayList<>();
     }
 
 
@@ -79,6 +87,14 @@ public class ChannelEntity {
 
     public List<Double> getValues() {
         return values;
+    }
+
+    public List<String> getServersId() {
+        return serversID;
+    }
+
+    public List<Long> getLastUpdated() {
+        return lastUpdated;
     }
 
 
